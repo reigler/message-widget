@@ -2,7 +2,7 @@
 
 A clean, minimal iOS widget that displays the latest message from your loved one using Supabase as a backend. Perfect for couples who want a simple way to stay connected throughout the day.
 
-![Widget Mockup Light](assets/mockup-light.pjpg)
+![Widget Mockup Light](assets/mockup-light.jpg)
 *Light mode version of the widget*
 
 ## ✨ Features
