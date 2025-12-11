@@ -1,4 +1,4 @@
-# 💌 Message Widget for iOS
+# Message Widget for iOS
 
 A clean, minimal iOS widget that displays the latest message from your loved one using Supabase as a backend. Perfect for couples who want a simple way to stay connected throughout the day.
 
@@ -10,16 +10,15 @@ A clean, minimal iOS widget that displays the latest message from your loved one
 
 ---
 
-## ✨ Features
+## Features
 
 - **Clean Minimal Design**: No distractions, just the message
 - **Automatic Dark Mode**: Switches to dark theme from 9 PM to 6 AM
 - **Responsive Layout**: Optimized for all widget sizes (small, medium, large)
-- **German Greetings**: Time-based German greetings (optional)
 - **Real-time Updates**: Fetches latest messages automatically
 - **Easy Setup**: Simple configuration with Supabase backend
 
-## 📱 Widget Preview
+## Widget Preview
 
 | Small Widget | Medium Widget | Large Widget |
 |-------------|--------------|--------------|
@@ -27,7 +26,7 @@ A clean, minimal iOS widget that displays the latest message from your loved one
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prerequisites
 
@@ -92,18 +91,18 @@ A clean, minimal iOS widget that displays the latest message from your loved one
 
 ---
 
-## 📁 Full Widget Code
+## Full Widget Code
 
 ```javascript
-// ====================
-// MESSAGE WIDGET
-// ====================
+//
+// SUPABASE MESSAGE WIDGET
+//
 
-// CONFIGURATION
-const SUPABASE_URL = "https://your-project.supabase.co";
-const SUPABASE_KEY = "your-anon-public-key-here";
-const NAME = "PartnerName"; // Optional: Leave empty for no greeting
+// CONFIGURE THESE 2 VALUES
+const SUPABASE_URL = "REPLACE WITH YOUR SUPABASE URL";
+const SUPABASE_KEY = "REPLACE WITH YOUR SUPABASE ANON KEY";
 
+// REST endpoint
 const ENDPOINT = "/rest/v1/messages?select=text&order=updated_at.desc&limit=1";
 
 async function fetchLatestMessage() {
@@ -119,78 +118,89 @@ async function fetchLatestMessage() {
     const json = await req.loadJSON();
     return json[0]?.text || null;
   } catch (error) {
-    console.error("Error fetching message:", error);
     return null;
   }
 }
 
-function isNightMode() {
+function getTimeBasedColors() {
   const hour = new Date().getHours();
-  return hour >= 21 || hour < 6;
-}
-
-function getGermanGreeting() {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return "Guten Morgen";
-  if (hour >= 12 && hour < 18) return "Guten Tag";
-  if (hour >= 18 && hour < 22) return "Guten Abend";
-  return "Gute Nacht";
+  
+  // Between 9pm and 6am: Dark Mode
+  if (hour >= 21 || hour < 6) {
+    return {
+      background: "#1A1A1A",  // Dark grey
+      text: "#F0F0F0",        // Offwhite
+      placeholder: "#999999"   // Mid-Grey
+    };
+  }
+  
+  // Daytime (6am - 9pm): Lightmode
+  return {
+    background: "#FFFFFF",
+    text: "#000000",
+    placeholder: "#888888"
+  };
 }
 
 async function createWidget() {
   const message = await fetchLatestMessage();
-  const nightMode = isNightMode();
-
-  let widget = new ListWidget();
-  widget.backgroundColor = nightMode ? new Color("#121212") : new Color("#FFFFFF");
+  const colors = getTimeBasedColors();
   
-  // Detect widget size
+  // recognize widget size
   const isMediumWidget = !config.runsInApp && config.widgetFamily === "medium";
   const isLargeWidget = !config.runsInApp && config.widgetFamily === "large";
+  const isSmallWidget = !config.runsInApp && config.widgetFamily === "small";
+
+  let widget = new ListWidget();
+  widget.backgroundColor = new Color(colors.background);
   
-  // Add greeting if name is set
-  if (NAME) {
-    let greeting = widget.addText(`${getGermanGreeting()}, ${NAME}`);
-    greeting.font = Font.mediumSystemFont(12);
-    greeting.textColor = nightMode ? new Color("#AAAAAA") : new Color("#666666");
-    widget.addSpacer(6);
-  }
-  
-  // Display message
   if (message) {
     let messageText = widget.addText(message);
     
-    // Font size based on widget size
+    // adjusted font size for widget size
     if (isLargeWidget) {
-      messageText.font = Font.systemFont(18);
+      messageText.font = Font.systemFont(32);  // big
     } else if (isMediumWidget) {
-      messageText.font = Font.systemFont(17);
+      messageText.font = Font.systemFont(28);  // medium
+    } else if (isSmallWidget) {
+      messageText.font = Font.systemFont(20);  // small
     } else {
-      messageText.font = Font.systemFont(15);
+      messageText.font = Font.systemFont(16);  // default
     }
     
-    messageText.textColor = nightMode ? new Color("#FFFFFF") : new Color("#000000");
+    messageText.textColor = new Color(colors.text);
     messageText.lineLimit = 0;
+    messageText.minimumScaleFactor = 0.8;  // text can shrink if necessary
     
-    // Center text in medium/large widgets
-    if (isMediumWidget || isLargeWidget) {
+    // align centre 
+    if (isMediumWidget || isLargeWidget || isSmallWidget) {
       messageText.centerAlignText();
     }
   } else {
-    let placeholder = widget.addText("No messages yet");
-    placeholder.font = Font.systemFont(14);
-    placeholder.textColor = nightMode ? new Color("#AAAAAA") : new Color("#888888");
+    let placeholder = widget.addText("Keine Nachrichten");
+    
+    if (isLargeWidget) {
+      placeholder.font = Font.systemFont(17);
+    } else if (isMediumWidget) {
+      placeholder.font = Font.systemFont(15);
+    } else {
+      placeholder.font = Font.systemFont(14);
+    }
+    
+    placeholder.textColor = new Color(colors.placeholder);
     
     if (isMediumWidget || isLargeWidget) {
       placeholder.centerAlignText();
     }
   }
 
-  // Adjust padding based on widget size
+  // dynamic padding for better balance
   if (isLargeWidget) {
-    widget.setPadding(22, 22, 22, 22);
+    widget.setPadding(24, 24, 24, 24);
   } else if (isMediumWidget) {
-    widget.setPadding(18, 18, 18, 18);
+    widget.setPadding(20, 20, 20, 20);
+  } else if (isSmallWidget) {
+    widget.setPadding(16, 16, 16, 16);
   } else {
     widget.setPadding(14, 14, 14, 14);
   }
@@ -198,9 +208,6 @@ async function createWidget() {
   return widget;
 }
 
-// ====================
-// EXECUTION
-// ====================
 let widget = await createWidget();
 
 if (config.runsInWidget) {
@@ -209,13 +216,13 @@ if (config.runsInWidget) {
   widget.presentMedium();
 }
 
-widget.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+widget.refreshAfterDate = new Date(Date.now() + 60 * 1000); // refresh after 1min
 Script.complete();
 ```
 
 ---
 
-## 🔧 Customization
+## Customization
 
 ### Change Colors
 Modify these lines in the code:
@@ -232,17 +239,17 @@ messageText.textColor = new Color("#FFFFFF");   // Text color
 ### Adjust Font Sizes
 ```javascript
 // Small widget
-messageText.font = Font.systemFont(15);
+messageText.font = Font.systemFont(32);
 
 // Medium widget  
-messageText.font = Font.systemFont(17);
+messageText.font = Font.systemFont(28);
 
 // Large widget
-messageText.font = Font.systemFont(18);
+messageText.font = Font.systemFont(20);
 ```
 
 ### Change Refresh Interval
-The widget updates every 15 minutes by default. To change this:
+The widget updates every minute by default. To change this:
 ```javascript
 // Update every 5 minutes:
 widget.refreshAfterDate = new Date(Date.now() + 5 * 60 * 1000);
@@ -251,20 +258,9 @@ widget.refreshAfterDate = new Date(Date.now() + 5 * 60 * 1000);
 widget.refreshAfterDate = new Date(Date.now() + 60 * 60 * 1000);
 ```
 
-### Remove Greeting
-If you don't want the greeting, either:
-1. Set `NAME = ""` in the configuration, or
-2. Remove this section from the code:
-   ```javascript
-   if (NAME) {
-     let greeting = widget.addText(`${getGermanGreeting()}, ${NAME}`);
-     // ... rest of greeting code
-   }
-   ```
-
 ---
 
-## 🌐 Sending Messages
+## Sending Messages
 
 ### Via Supabase Dashboard
 1. Go to your Supabase project
@@ -287,32 +283,190 @@ Create an HTML file like this:
 ```html
 <!DOCTYPE html>
 <html>
-<body>
-  <input id="message" placeholder="Enter message">
-  <button onclick="sendMessage()">Send</button>
-  
-  <script>
-    async function sendMessage() {
-      const message = document.getElementById('message').value;
-      await fetch('https://YOUR_PROJECT.supabase.co/rest/v1/messages', {
-        method: 'POST',
-        headers: {
-          'apikey': 'YOUR_KEY',
-          'Authorization': 'Bearer YOUR_KEY',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ text: message })
-      });
-      alert('Message sent!');
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Send Message</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.36.0/dist/umd/supabase.min.js"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f5;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
     }
-  </script>
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      padding: 24px;
+      margin: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+
+    h3, h4 {
+      margin-top: 80px;
+      font-size: clamp(1.4rem, 4vw, 1.2rem);
+    }
+
+    h2 {
+       margin-top: 0;
+      font-size: clamp(1.8rem, 4vw, 1.8rem);
+    }
+
+    input, textarea, button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 14px;
+      font-size: clamp(1.0rem, 3.5vw, 1.2rem);
+      border-radius: 10px;
+      border: 1px solid #d4d4d8;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 120px;
+    }
+
+    button {
+      background: black;
+      color: white;
+      border: none;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    #logoutButton {
+      background: #6d6868;
+      margin-top: 24px;
+    }
+
+    #latestMessage {
+      background: #fafafa;
+      border: 1px solid #e4e4e7;
+      padding: 14px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: clamp(1rem, 3.5vw, 1.1rem);
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h2>Send a Message to the E-Ink Display</h2>
+
+    <!-- Login Form -->
+    <div id="loginBox">
+      <h3>Login</h3>
+      <input type="email" id="email" placeholder="Your email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Message Form -->
+    <div id="messageBox" class="hidden">
+      <h3>Write a Message</h3>
+
+      <textarea id="message" placeholder="Type your message..."></textarea>
+      <button onclick="sendMessage()">Send</button>
+
+      <h4>Latest Message</h4>
+      <div id="latestMessage">(none yet)</div>
+
+      <button id="logoutButton" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script>
+  // Initialize Supabase
+  const client = supabase.createClient(
+    "REPLACE WITH YOUR SUPABASE URL",
+    "REPLACE WITH YOUR SUPABASE ANON KEY"
+  );
+
+  async function login() {
+  console.log("Login clicked");
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  console.log("Email:", email, "Password:", password);
+
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  console.log("Supabase response:", data, error);
+
+  if (error) {
+    alert("Login failed: " + error.message);
+    return;
+  }
+
+  console.log("User data:", data.user);
+
+  if (data.user) {
+    
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("messageBox").classList.remove("hidden");
+    loadLatestMessage();
+  } else {
+    alert("Login failed: no user returned");
+  }
+}
+
+  async function sendMessage() {
+    const text = document.getElementById("message").value;
+    if (!text.trim()) return alert("Please type a message first.");
+
+    const { data, error } = await client
+      .from("messages")
+      .insert([{ text }]);
+
+    if (error) return alert("Error sending message: " + error.message);
+
+    document.getElementById("message").value = "";
+    loadLatestMessage();
+  }
+
+  async function loadLatestMessage() {
+    const { data, error } = await client
+      .from("messages")
+      .select("text, updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    const box = document.getElementById("latestMessage");
+    if (error || data.length === 0) return box.innerText = "(none)";
+    box.innerText = data[0].text + "\n\n(" + data[0].updated_at + ")";
+  }
+
+  async function logout() {
+    await client.auth.signOut();
+    document.getElementById("messageBox").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+  }
+</script>
+
 </body>
 </html>
 ```
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 - The widget uses Supabase's **anon public key** which only allows reading messages
 - For additional security, you can:
@@ -323,7 +477,7 @@ Create an HTML file like this:
 
 ---
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 ### Widget shows "No messages yet"
 1. Check your Supabase URL and API key are correct
@@ -335,18 +489,15 @@ Create an HTML file like this:
 2. Try removing and re-adding the widget
 3. Restart the Scriptable app
 
-### German greetings incorrect
-The greetings are based on your device's local time. Check your iPhone's time zone settings.
-
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **[Scriptable](https://scriptable.app/)** - iOS automation app that makes this widget possible
 - **[Supabase](https://supabase.com/)** - Open source Firebase alternative for the backend
@@ -354,7 +505,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Found a bug or have an improvement? 
 1. Fork the repository
