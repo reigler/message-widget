@@ -463,6 +463,13 @@ Create an HTML file like this:
 </html>
 ```
 
+## Setup and hosting
+
+- Create a free Vercel account 
+- Connect your GitHub webapp repository with vercel and host it for free
+- Then follow instructions from: https://ios.gadgethacks.com/how-to/turn-any-website-into-full-screen-app-your-iphone-0384426/ if you want easy access to the Webapp (optional)
+
+
 ---
 
 ## Security Notes
