@@ -2,11 +2,11 @@
 
 A clean, minimal iOS widget that displays the latest message from your loved one using Supabase as a backend. Perfect for couples who want a simple way to stay connected throughout the day.
 
-![Widget Mockup Dark](assets/mockup-dark.jpg)
-*Dark mode version of the widget*
-
-![Widget Mockup Light](assets/mockup-light.jpg)
+![Widget Mockup Dark](assets/mockup-light.jpg)
 *Light mode version of the widget*
+
+![Widget Mockup Light](assets/mockup-dark.jpg)
+*Dark mode version of the widget*
 
 ---
 
@@ -79,7 +79,6 @@ A clean, minimal iOS widget that displays the latest message from your loved one
    // ====================
    const SUPABASE_URL = "https://your-project.supabase.co";  // Your Supabase URL
    const SUPABASE_KEY = "your-anon-public-key-here";         // Your anon public key
-   const NAME = "PartnerName";                               // Optional: Leave empty for no greeting
    ```
 
 3. **Add to Home Screen**
